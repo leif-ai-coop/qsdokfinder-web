@@ -11,6 +11,10 @@ import {
   Button,
   Grid,
   Paper,
+  TextField,
+  MenuItem,
+  Stack,
+  IconButton,
 } from '@mui/material';
 import { grey } from '@mui/material/colors';
 import { getStand, getYears, getQsv, getInhaltstypen, getModules, getDocuments } from './api';
@@ -18,6 +22,7 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import DocumentsTable from './components/DocumentsTable';
 import FiltersPanel from './components/FiltersPanel';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 
 const getDesignTokens = (mode) => ({
   palette: {
@@ -133,6 +138,16 @@ export default function App() {
   const clearFilter = (key) => setQuery((s) => { const n = { ...s }; delete n[key]; return n; });
   const resetAll = () => setQuery({});
 
+  // Limit handling (results per page)
+  const limitFromQuery = (() => {
+    const raw = query.limit ?? '30';
+    if (raw === 'all') return 'all';
+    const v = parseInt(raw, 10);
+    return Number.isFinite(v) ? String(v) : '30';
+  })();
+  const numericLimit = limitFromQuery === 'all' ? Infinity : parseInt(limitFromQuery, 10);
+  const displayedDocuments = Number.isFinite(numericLimit) ? docs.documents.slice(0, numericLimit) : docs.documents;
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -141,9 +156,28 @@ export default function App() {
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4, flex: 1 }}>
           <Paper sx={{ p: 2, borderRadius: 3, boxShadow: 2, background: theme.palette.background.paper }}>
             <Typography variant="h4" align="center" gutterBottom>QS-Dokumente</Typography>
-            <Typography variant="body2" align="center" gutterBottom>
-              Anzahl Treffer: {docs.total} {stand ? `| Stand: ${stand}` : ''}
-            </Typography>
+            <Stack direction="row" spacing={2} alignItems="center" justifyContent="center" sx={{ mb: 1 }}>
+              <Typography variant="body2">Anzahl Treffer: {docs.total}</Typography>
+              <Typography variant="body2">|</Typography>
+              <Typography variant="body2">Angezeigte Treffer (max.):</Typography>
+              <TextField
+                select
+                size="small"
+                value={limitFromQuery}
+                onChange={(e) => setQuery((s) => ({ ...s, limit: e.target.value }))}
+                sx={{ width: 90 }}
+              >
+                {[30, 50, 100].map((v) => (
+                  <MenuItem key={v} value={String(v)}>{v}</MenuItem>
+                ))}
+                <MenuItem value="all">Alle</MenuItem>
+              </TextField>
+              <Typography variant="body2">|</Typography>
+              <Typography variant="body2">Stand: {stand ?? '-'}</Typography>
+              <IconButton size="small" aria-label="Info">
+                <HelpOutlineIcon fontSize="small" />
+              </IconButton>
+            </Stack>
 
             {activeChips.length > 0 && (
               <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: 'center', mb: 2 }}>
@@ -168,7 +202,7 @@ export default function App() {
             <Grid item xs={12} md={9}>
               <Paper sx={{ p: 1 }}>
                 <Box sx={{ overflowX: 'auto' }}>
-                  <DocumentsTable documents={docs.documents} />
+                  <DocumentsTable documents={displayedDocuments} />
                 </Box>
               </Paper>
             </Grid>
