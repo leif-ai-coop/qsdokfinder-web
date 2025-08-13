@@ -3,7 +3,8 @@ WORKDIR /app
 COPY package*.json ./
 COPY tailwind.config.js ./tailwind.config.js
 COPY postcss.config.js ./postcss.config.js
-RUN npm ci
+# Use lockfile if present, otherwise fall back to npm install
+RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
 COPY . /app
 RUN npm run build
 
