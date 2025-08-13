@@ -14,26 +14,46 @@ import {
 } from '@mui/material';
 import { grey } from '@mui/material/colors';
 import { getStand, getYears, getQsv, getInhaltstypen, getModules, getDocuments } from './api';
+import Header from './components/Header';
+import Footer from './components/Footer';
+import DocumentsTable from './components/DocumentsTable';
+import FiltersPanel from './components/FiltersPanel';
 
 const getDesignTokens = (mode) => ({
   palette: {
     mode,
     ...(mode === 'light'
-      ? { primary: { main: '#2c3e50' }, background: { default: '#ffffff', paper: '#fff' } }
-      : { primary: { main: '#6B9FA1' }, background: { default: '#1A3344', paper: '#1e1e1e' }, text: { primary: '#fff', secondary: grey[500] } }),
+      ? {
+          primary: { main: '#1A3344' },
+          secondary: { main: '#9c27b0' },
+          background: { default: '#f5f5f5', paper: '#fff' },
+        }
+      : {
+          primary: { main: '#6B9FA1' },
+          secondary: { main: '#ce93d8' },
+          background: { default: '#1A3344', paper: '#1e1e1e' },
+          text: { primary: '#fff', secondary: grey[500] },
+        }),
+  },
+  components: {
+    MuiCssBaseline: {
+      styleOverrides: () => ({
+        body: {
+          backgroundColor: mode === 'dark' ? '#1A3344' : '#f5f5f5',
+          transition: 'background-color 0.3s ease',
+        },
+      }),
+    },
+    MuiPaper: {
+      styleOverrides: { root: { transition: 'background-color 0.3s ease' } },
+    },
+    MuiAppBar: {
+      styleOverrides: { root: { backgroundColor: '#1A3344' } },
+    },
   },
 });
 
-const inhaltstypDescriptions = {
-  QSF_EXP: 'QS-Filter bzw. Expormodulinformationen',
-  QSD: 'QS-Dokumentationsbögen',
-  AH: 'Ausfüllhinweise',
-  RR: 'Rechenregeln',
-  DV: 'Datenvalidierung',
-  BUAW: 'Bundesauswertung',
-  BQB: 'Bundesqualitätsbericht',
-  Sonstige: 'Sonstige Dokumente',
-};
+// Descriptions moved into FiltersPanel
 
 function useQueryState() {
   const [state, setState] = useState(() => Object.fromEntries(new URLSearchParams(window.location.search)));
@@ -46,7 +66,10 @@ function useQueryState() {
 }
 
 export default function App() {
-  const [mode, setMode] = useState('light');
+  const [mode, setMode] = useState(() => {
+    const saved = localStorage.getItem('themeMode');
+    return saved || 'light';
+  });
   const theme = useMemo(() => createTheme(getDesignTokens(mode)), [mode]);
   const [query, setQuery] = useQueryState();
 
@@ -56,6 +79,19 @@ export default function App() {
   const [inhaltstypen, setInhaltstypen] = useState([]);
   const [modules, setModules] = useState([]);
   const [docs, setDocs] = useState({ total: 0, documents: [] });
+
+  const toggleColorMode = () => {
+    setMode((prev) => {
+      const next = prev === 'light' ? 'dark' : 'light';
+      localStorage.setItem('themeMode', next);
+      return next;
+    });
+  };
+
+  useEffect(() => {
+    if (mode === 'dark') document.documentElement.classList.add('dark');
+    else document.documentElement.classList.remove('dark');
+  }, [mode]);
 
   useEffect(() => {
     getStand().then((d) => setStand(d.stand));
@@ -100,142 +136,47 @@ export default function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Container maxWidth="xl" sx={{ py: 2 }}>
-        <Typography variant="h4" align="center" gutterBottom>QS-Dokumente</Typography>
-        <Typography variant="body2" align="center" gutterBottom>
-          Anzahl Treffer: {docs.total} {stand ? `| Stand: ${stand}` : ''}
-        </Typography>
+      <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: theme.palette.background.default }}>
+        <Header toggleColorMode={toggleColorMode} />
+        <Container maxWidth="lg" sx={{ mt: 4, mb: 4, flex: 1 }}>
+          <Paper sx={{ p: 2, borderRadius: 3, boxShadow: 2, background: theme.palette.background.paper }}>
+            <Typography variant="h4" align="center" gutterBottom>QS-Dokumente</Typography>
+            <Typography variant="body2" align="center" gutterBottom>
+              Anzahl Treffer: {docs.total} {stand ? `| Stand: ${stand}` : ''}
+            </Typography>
 
-        {activeChips.length > 0 && (
-          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: 'center', mb: 2 }}>
-            {activeChips.map(([k, label]) => (
-              <Chip key={k} label={label} color="primary" onClick={() => clearFilter(k)} />
-            ))}
-          </Box>
-        )}
-
-        <Grid container spacing={2}>
-          <Grid item xs={12} md={3}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Button variant="contained" onClick={resetAll}>Filter zurücksetzen</Button>
-
-              <Paper sx={{ p: 1 }}>
-                <Typography variant="subtitle2">QS-Verfahren</Typography>
-                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                  {qsvList.map(({ qsv, verfahrensnummer }) => (
-                    <Chip key={qsv}
-                      label={`${qsv} (${verfahrensnummer ?? '-'})`}
-                      color={query.qsv === qsv ? 'primary' : 'default'}
-                      onClick={() => setOrToggle('qsv', qsv)} />
-                  ))}
-                </Box>
-              </Paper>
-
-              <Paper sx={{ p: 1 }}>
-                <Typography variant="subtitle2">Inhaltstyp</Typography>
-                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                  {inhaltstypen.map((t) => (
-                    <Tooltip key={t} title={inhaltstypDescriptions[t] || ''}>
-                      <Chip label={t}
-                        color={query.inhaltstyp === t ? 'primary' : 'default'}
-                        onClick={() => setOrToggle('inhaltstyp', t)} />
-                    </Tooltip>
-                  ))}
-                </Box>
-              </Paper>
-
-              <Paper sx={{ p: 1 }}>
-                <Typography variant="subtitle2">Jahr</Typography>
-                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                  {years.map((y) => (
-                    <Chip key={y}
-                      label={y}
-                      color={query.year === y ? 'primary' : 'default'}
-                      onClick={() => setOrToggle('year', y)} />
-                  ))}
-                </Box>
-              </Paper>
-
-              <Paper sx={{ p: 1 }}>
-                <Typography variant="subtitle2">Auswertungsmodule (AM)</Typography>
-                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                  {modules.filter(m => m.Modulart === 'AM').map(m => (
-                    <Chip key={`AM-${m.Modul}`} label={m.Modul}
-                      color={query.modul === m.Modul ? 'primary' : 'default'}
-                      onClick={() => setOrToggle('modul', m.Modul)} />
-                  ))}
-                </Box>
-                <Typography variant="subtitle2" sx={{ mt: 1 }}>Erfassungsmodule (EM)</Typography>
-                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                  {modules.filter(m => m.Modulart === 'EM').map(m => (
-                    <Chip key={`EM-${m.Modul}`} label={m.Modul}
-                      color={query.modul === m.Modul ? 'primary' : 'default'}
-                      onClick={() => setOrToggle('modul', m.Modul)} />
-                  ))}
-                </Box>
-              </Paper>
-
-              <Paper sx={{ p: 1 }}>
-                <Typography variant="subtitle2">Neueste Aktualisierungen</Typography>
-                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                  {[
-                    { v: '1', l: 'Letzte 7 Tage' },
-                    { v: '2', l: '7-14 Tage' },
-                    { v: '3', l: '14-30 Tage' },
-                    { v: '4', l: 'Letzter Monat' },
-                  ].map(({ v, l }) => (
-                    <Chip key={v} label={l}
-                      color={query.recent === v ? 'primary' : 'default'}
-                      onClick={() => setOrToggle('recent', v)} />
-                  ))}
-                </Box>
-              </Paper>
-            </Box>
-          </Grid>
-
-          <Grid item xs={12} md={9}>
-            <Paper sx={{ p: 1 }}>
-              <Box sx={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                  <thead>
-                    <tr>
-                      <th>QS-Verfahren</th>
-                      <th>Inhaltstyp</th>
-                      <th>Modul (EM/AM)</th>
-                      <th>Jahr</th>
-                      <th>AJ/EJ/SJ</th>
-                      <th>Version</th>
-                      <th>Zusatzinfo</th>
-                      <th>Download</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {docs.documents.map((row, idx) => (
-                      (!row.Inhaltstyp || row.Inhaltstyp === '') ? (
-                        <tr key={idx} style={{ background: idx % 2 ? '#f2f2f2' : 'transparent' }}>
-                          <td colSpan="7">Sonstige Einträge...</td>
-                          <td><a href={row.url} target="_blank" rel="noreferrer">Link</a></td>
-                        </tr>
-                      ) : (
-                        <tr key={idx} style={{ background: idx % 2 ? '#f2f2f2' : 'transparent' }}>
-                          <td>{`${row.QSV || ''} (${row.Verfahrensnummer || ''})`}</td>
-                          <td>{row.Inhaltstyp || ''}</td>
-                          <td>{row.Modul_EM_AM || ''}</td>
-                          <td>{row.Jahr || ''}</td>
-                          <td>{row.Jahr_typ || ''}</td>
-                          <td>{row.Version || ''}</td>
-                          <td>{row.Zusatzinfo || ''}</td>
-                          <td><a href={row.url} target="_blank" rel="noreferrer">Link</a></td>
-                        </tr>
-                      )
-                    ))}
-                  </tbody>
-                </table>
+            {activeChips.length > 0 && (
+              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: 'center', mb: 2 }}>
+                {activeChips.map(([k, label]) => (
+                  <Chip key={k} label={label} color="primary" onClick={() => clearFilter(k)} />
+                ))}
               </Box>
-            </Paper>
+            )}
+
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={3}>
+              <FiltersPanel
+                qsvList={qsvList}
+                inhaltstypen={inhaltstypen}
+                years={years}
+                modules={modules}
+                query={query}
+                onSet={setOrToggle}
+                onReset={resetAll}
+              />
+            </Grid>
+            <Grid item xs={12} md={9}>
+              <Paper sx={{ p: 1 }}>
+                <Box sx={{ overflowX: 'auto' }}>
+                  <DocumentsTable documents={docs.documents} />
+                </Box>
+              </Paper>
+            </Grid>
           </Grid>
-        </Grid>
-      </Container>
+          </Paper>
+        </Container>
+        <Footer />
+      </Box>
     </ThemeProvider>
   );
 }
