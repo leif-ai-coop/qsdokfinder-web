@@ -22,7 +22,7 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import DocumentsTable from './components/DocumentsTable';
 import FiltersPanel from './components/FiltersPanel';
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import InfoHelp from './components/InfoHelp';
 
 const getDesignTokens = (mode) => ({
   palette: {
@@ -174,9 +174,7 @@ export default function App() {
               </TextField>
               <Typography variant="body2">|</Typography>
               <Typography variant="body2">Stand: {stand ?? '-'}</Typography>
-              <IconButton size="small" aria-label="Info">
-                <HelpOutlineIcon fontSize="small" />
-              </IconButton>
+              <InfoHelp />
             </Stack>
 
             {activeChips.length > 0 && (
