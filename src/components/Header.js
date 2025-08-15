@@ -24,7 +24,7 @@ const Header = ({ toggleColorMode, toggleFilterGUI, useAlternativeFilters }) => 
 						<Button
 							variant="outlined"
 							size="small"
-							startIcon={useAlternativeFilters ? <ViewModule /> : <ViewList />}
+							startIcon={useAlternativeFilters ? <ViewList /> : <ViewModule />}
 							onClick={toggleFilterGUI}
 							sx={{
 								color: 'white',
@@ -37,7 +37,7 @@ const Header = ({ toggleColorMode, toggleFilterGUI, useAlternativeFilters }) => 
 								fontSize: isMobile ? '0.75rem' : '0.875rem',
 							}}
 						>
-							{useAlternativeFilters ? 'Neue Filter-GUI' : 'Klassische Filter'}
+							{useAlternativeFilters ? 'Klassische Filter' : 'Neue Filter-GUI'}
 						</Button>
 						<ThemeToggle toggleColorMode={toggleColorMode} />
 					</Stack>

@@ -40,6 +40,7 @@ export default function AlternativeFiltersPanel({
   // Filter modules by type
   const erfassungsmodule = modules.filter(m => m.Modulart === 'EM');
   const auswertungsmodule = modules.filter(m => m.Modulart === 'AM');
+  const chipSx = { '& .MuiChip-label': { maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis' } };
 
   const handleViewChange = (newView) => {
     setActiveView(newView);
@@ -86,6 +87,7 @@ export default function AlternativeFiltersPanel({
                         color={query.modul === m.Modul ? 'primary' : 'default'}
                         onClick={() => onSet('modul', m.Modul)}
                         size="small"
+                        sx={chipSx}
                       />
                     ))}
                     {erfassungsmodule.length === 0 && (
@@ -108,6 +110,7 @@ export default function AlternativeFiltersPanel({
                         color={query.modul === m.Modul ? 'primary' : 'default'}
                         onClick={() => onSet('modul', m.Modul)}
                         size="small"
+                        sx={chipSx}
                       />
                     ))}
                     {auswertungsmodule.length === 0 && (
