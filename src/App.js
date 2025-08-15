@@ -22,6 +22,7 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import DocumentsTable from './components/DocumentsTable';
 import FiltersPanel from './components/FiltersPanel';
+import AlternativeFiltersPanel from './components/AlternativeFiltersPanel';
 import InfoHelp from './components/InfoHelp';
 
 const getDesignTokens = (mode) => ({
@@ -77,6 +78,12 @@ export default function App() {
   });
   const theme = useMemo(() => createTheme(getDesignTokens(mode)), [mode]);
   const [query, setQuery] = useQueryState();
+  
+  // Use alternative filter GUI by default
+  const [useAlternativeFilters, setUseAlternativeFilters] = useState(() => {
+    const saved = localStorage.getItem('useAlternativeFilters');
+    return saved !== null ? saved === 'true' : true; // Default to true (alternative GUI)
+  });
 
   const [stand, setStand] = useState(null);
   const [years, setYears] = useState([]);
@@ -89,6 +96,14 @@ export default function App() {
     setMode((prev) => {
       const next = prev === 'light' ? 'dark' : 'light';
       localStorage.setItem('themeMode', next);
+      return next;
+    });
+  };
+
+  const toggleFilterGUI = () => {
+    setUseAlternativeFilters((prev) => {
+      const next = !prev;
+      localStorage.setItem('useAlternativeFilters', next);
       return next;
     });
   };
@@ -152,7 +167,11 @@ export default function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: theme.palette.background.default }}>
-        <Header toggleColorMode={toggleColorMode} />
+        <Header 
+          toggleColorMode={toggleColorMode} 
+          toggleFilterGUI={toggleFilterGUI}
+          useAlternativeFilters={useAlternativeFilters}
+        />
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4, flex: 1 }}>
           <Paper sx={{ p: 2, borderRadius: 3, boxShadow: 2, background: theme.palette.background.paper }}>
             <Typography variant="h4" align="center" gutterBottom>QS-Dokumente</Typography>
@@ -187,15 +206,27 @@ export default function App() {
 
           <Grid container spacing={2}>
             <Grid item xs={12} md={3}>
-              <FiltersPanel
-                qsvList={qsvList}
-                inhaltstypen={inhaltstypen}
-                years={years}
-                modules={modules}
-                query={query}
-                onSet={setOrToggle}
-                onReset={resetAll}
-              />
+              {useAlternativeFilters ? (
+                <AlternativeFiltersPanel
+                  qsvList={qsvList}
+                  inhaltstypen={inhaltstypen}
+                  years={years}
+                  modules={modules}
+                  query={query}
+                  onSet={setOrToggle}
+                  onReset={resetAll}
+                />
+              ) : (
+                <FiltersPanel
+                  qsvList={qsvList}
+                  inhaltstypen={inhaltstypen}
+                  years={years}
+                  modules={modules}
+                  query={query}
+                  onSet={setOrToggle}
+                  onReset={resetAll}
+                />
+              )}
             </Grid>
             <Grid item xs={12} md={9}>
               <Paper sx={{ p: 1 }}>

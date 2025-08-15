@@ -1,8 +1,9 @@
 import React from 'react';
-import { AppBar, Toolbar, Typography, Box, useMediaQuery, useTheme } from '@mui/material';
+import { AppBar, Toolbar, Typography, Box, useMediaQuery, useTheme, Button, Stack } from '@mui/material';
+import { ViewList, ViewModule } from '@mui/icons-material';
 import ThemeToggle from './ThemeToggle';
 
-const Header = ({ toggleColorMode }) => {
+const Header = ({ toggleColorMode, toggleFilterGUI, useAlternativeFilters }) => {
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 	return (
@@ -19,7 +20,27 @@ const Header = ({ toggleColorMode }) => {
 					QS‑Dokumente
 				</Typography>
 				<Box>
-					<ThemeToggle toggleColorMode={toggleColorMode} />
+					<Stack direction="row" spacing={1} alignItems="center">
+						<Button
+							variant="outlined"
+							size="small"
+							startIcon={useAlternativeFilters ? <ViewModule /> : <ViewList />}
+							onClick={toggleFilterGUI}
+							sx={{
+								color: 'white',
+								borderColor: 'rgba(255, 255, 255, 0.5)',
+								'&:hover': {
+									borderColor: 'white',
+									backgroundColor: 'rgba(255, 255, 255, 0.1)',
+								},
+								textTransform: 'none',
+								fontSize: isMobile ? '0.75rem' : '0.875rem',
+							}}
+						>
+							{useAlternativeFilters ? 'Neue Filter-GUI' : 'Klassische Filter'}
+						</Button>
+						<ThemeToggle toggleColorMode={toggleColorMode} />
+					</Stack>
 				</Box>
 			</Toolbar>
 		</AppBar>
