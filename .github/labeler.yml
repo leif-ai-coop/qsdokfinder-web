@@ -1,0 +1,70 @@
+# Configuration for the labeler action
+
+# Pull request labels based on file changes
+frontend:
+  - 'src/**/*'
+  - 'public/**/*'
+
+styling:
+  - 'src/**/*.css'
+  - 'src/**/*.scss'
+  - 'src/**/*.less'
+  - 'tailwind.config.js'
+  - 'postcss.config.js'
+
+components:
+  - 'src/components/**/*'
+
+api:
+  - 'src/api.js'
+  - 'src/api/**/*'
+
+tests:
+  - 'src/**/*.test.js'
+  - 'src/**/*.test.jsx'
+  - 'src/**/*.test.ts'
+  - 'src/**/*.test.tsx'
+  - 'src/**/*.spec.js'
+  - 'src/**/*.spec.jsx'
+  - 'src/**/*.spec.ts'
+  - 'src/**/*.spec.tsx'
+  - '__tests__/**/*'
+
+documentation:
+  - '*.md'
+  - 'docs/**/*'
+  - '.github/**/*'
+
+dependencies:
+  - 'package.json'
+  - 'package-lock.json'
+  - 'yarn.lock'
+
+configuration:
+  - '*.config.js'
+  - '*.config.json'
+  - '.env*'
+  - '.eslintrc*'
+  - '.prettierrc*'
+  - 'tsconfig.json'
+
+docker:
+  - 'Dockerfile'
+  - 'docker-compose*.yml'
+  - '.dockerignore'
+
+ci/cd:
+  - '.github/workflows/**/*'
+  - '.github/actions/**/*'
+
+security:
+  - '.github/workflows/security.yml'
+  - 'package-lock.json'
+
+performance:
+  - 'src/**/*.js'
+  - 'src/**/*.jsx'
+  - 'src/**/*.ts'
+  - 'src/**/*.tsx'
+  - 'webpack.config.js'
+  - '.lighthouserc.json'
