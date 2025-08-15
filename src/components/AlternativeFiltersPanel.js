@@ -9,8 +9,10 @@ import {
   Tabs, 
   Tab,
   Divider,
-  Stack
+  Stack,
+  Grid
 } from '@mui/material';
+import YearChart from './YearChart';
 
 const inhaltstypDescriptions = {
 	QSF_EXP: 'QS-Filter bzw. Expormodulinformationen',
@@ -47,76 +49,165 @@ export default function AlternativeFiltersPanel({
     }
   };
 
-  const renderQSVerfahrenView = () => (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <Paper sx={{ p: 2 }}>
-        <Typography variant="h6" gutterBottom>QS-Verfahren auswählen:</Typography>
-        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-          {qsvList.map(({ qsv, verfahrensnummer }) => (
-            <Chip 
-              key={qsv}
-              label={`${qsv} (${verfahrensnummer ?? '-'})`}
-              color={query.qsv === qsv ? 'primary' : 'default'}
-              onClick={() => onSet('qsv', qsv)}
-              sx={{ mb: 1 }}
-            />
-          ))}
+  const renderQSVerfahrenView = () => {
+    // If a QS-Verfahren is selected, show module overview instead
+    if (query.qsv) {
+      return (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Paper sx={{ p: 2 }}>
+            <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+              <Typography variant="h6">
+                Ausgewähltes Verfahren: {query.qsv}
+              </Typography>
+              <Button 
+                variant="outlined" 
+                size="small"
+                onClick={() => onSet('qsv', null)}
+              >
+                Verfahren ändern
+              </Button>
+            </Stack>
+
+            <Grid container spacing={2}>
+              <Grid item xs={12} md={7}>
+                <Typography variant="subtitle1" gutterBottom>
+                  Verfügbare Module auf einen Blick:
+                </Typography>
+                
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="subtitle2" color="primary" sx={{ mb: 1 }}>
+                    Spezifikationsmodule (Erfassungsmodule):
+                  </Typography>
+                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
+                    {erfassungsmodule.map(m => (
+                      <Chip 
+                        key={`EM-${m.Modul}`} 
+                        label={`${m.Modul} (EM)`}
+                        color={query.modul === m.Modul ? 'primary' : 'default'}
+                        onClick={() => onSet('modul', m.Modul)}
+                        size="small"
+                      />
+                    ))}
+                    {erfassungsmodule.length === 0 && (
+                      <Typography variant="body2" color="text.secondary">
+                        Keine Erfassungsmodule verfügbar
+                      </Typography>
+                    )}
+                  </Box>
+                </Box>
+
+                <Box>
+                  <Typography variant="subtitle2" color="secondary" sx={{ mb: 1 }}>
+                    Auswertungsmodule:
+                  </Typography>
+                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                    {auswertungsmodule.map(m => (
+                      <Chip 
+                        key={`AM-${m.Modul}`} 
+                        label={`${m.Modul} (AM)`}
+                        color={query.modul === m.Modul ? 'primary' : 'default'}
+                        onClick={() => onSet('modul', m.Modul)}
+                        size="small"
+                      />
+                    ))}
+                    {auswertungsmodule.length === 0 && (
+                      <Typography variant="body2" color="text.secondary">
+                        Keine Auswertungsmodule verfügbar
+                      </Typography>
+                    )}
+                  </Box>
+                </Box>
+              </Grid>
+
+              <Grid item xs={12} md={5}>
+                <YearChart 
+                  qsv={query.qsv} 
+                  onYearClick={(year) => onSet('year', year)}
+                />
+              </Grid>
+            </Grid>
+          </Paper>
+
+          {/* Additional filters when QS-Verfahren is selected */}
+          <Paper sx={{ p: 2 }}>
+            <Typography variant="subtitle1" gutterBottom>Weitere Filter:</Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box>
+                <Typography variant="subtitle2" gutterBottom>Inhaltstyp</Typography>
+                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                  {inhaltstypen.map((t) => (
+                    <Tooltip key={t} title={inhaltstypDescriptions[t] || ''}>
+                      <Chip 
+                        label={t}
+                        color={query.inhaltstyp === t ? 'primary' : 'default'}
+                        onClick={() => onSet('inhaltstyp', t)} 
+                        size="small"
+                      />
+                    </Tooltip>
+                  ))}
+                </Box>
+              </Box>
+
+              <Box>
+                <Typography variant="subtitle2" gutterBottom>Jahr</Typography>
+                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                  {years.map((y) => (
+                    <Chip 
+                      key={y}
+                      label={y}
+                      color={query.year === y ? 'primary' : 'default'}
+                      onClick={() => onSet('year', y)} 
+                      size="small"
+                    />
+                  ))}
+                </Box>
+              </Box>
+
+              <Box>
+                <Typography variant="subtitle2" gutterBottom>Neueste Aktualisierungen</Typography>
+                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                  {[
+                    { v: '1', l: 'Letzte 7 Tage' },
+                    { v: '2', l: '7-14 Tage' },
+                    { v: '3', l: '14-30 Tage' },
+                    { v: '4', l: 'Letzter Monat' },
+                  ].map(({ v, l }) => (
+                    <Chip 
+                      key={v} 
+                      label={l}
+                      color={query.recent === v ? 'primary' : 'default'}
+                      onClick={() => onSet('recent', v)}
+                      size="small"
+                    />
+                  ))}
+                </Box>
+              </Box>
+            </Box>
+          </Paper>
         </Box>
-      </Paper>
+      );
+    }
 
-      {query.qsv && (
-        <>
-          <Paper sx={{ p: 2 }}>
-            <Typography variant="subtitle1" gutterBottom>Inhaltstyp</Typography>
-            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-              {inhaltstypen.map((t) => (
-                <Tooltip key={t} title={inhaltstypDescriptions[t] || ''}>
-                  <Chip 
-                    label={t}
-                    color={query.inhaltstyp === t ? 'primary' : 'default'}
-                    onClick={() => onSet('inhaltstyp', t)} 
-                  />
-                </Tooltip>
-              ))}
-            </Box>
-          </Paper>
-
-          <Paper sx={{ p: 2 }}>
-            <Typography variant="subtitle1" gutterBottom>Jahr</Typography>
-            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-              {years.map((y) => (
-                <Chip 
-                  key={y}
-                  label={y}
-                  color={query.year === y ? 'primary' : 'default'}
-                  onClick={() => onSet('year', y)} 
-                />
-              ))}
-            </Box>
-          </Paper>
-
-          <Paper sx={{ p: 2 }}>
-            <Typography variant="subtitle1" gutterBottom>Neueste Aktualisierungen</Typography>
-            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-              {[
-                { v: '1', l: 'Letzte 7 Tage' },
-                { v: '2', l: '7-14 Tage' },
-                { v: '3', l: '14-30 Tage' },
-                { v: '4', l: 'Letzter Monat' },
-              ].map(({ v, l }) => (
-                <Chip 
-                  key={v} 
-                  label={l}
-                  color={query.recent === v ? 'primary' : 'default'}
-                  onClick={() => onSet('recent', v)} 
-                />
-              ))}
-            </Box>
-          </Paper>
-        </>
-      )}
-    </Box>
-  );
+    // Default QS-Verfahren selection view
+    return (
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Paper sx={{ p: 2 }}>
+          <Typography variant="h6" gutterBottom>QS-Verfahren auswählen:</Typography>
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+            {qsvList.map(({ qsv, verfahrensnummer }) => (
+              <Chip 
+                key={qsv}
+                label={`${qsv} (${verfahrensnummer ?? '-'})`}
+                color={query.qsv === qsv ? 'primary' : 'default'}
+                onClick={() => onSet('qsv', qsv)}
+                sx={{ mb: 1 }}
+              />
+            ))}
+          </Box>
+        </Paper>
+      </Box>
+    );
+  };
 
   const renderErfassungsmoduleView = () => (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -141,31 +232,44 @@ export default function AlternativeFiltersPanel({
       {query.modul && (
         <>
           <Paper sx={{ p: 2 }}>
-            <Typography variant="subtitle1" gutterBottom>QS-Verfahren</Typography>
-            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-              {qsvList.map(({ qsv, verfahrensnummer }) => (
-                <Chip 
-                  key={qsv}
-                  label={`${qsv} (${verfahrensnummer ?? '-'})`}
-                  color={query.qsv === qsv ? 'primary' : 'default'}
-                  onClick={() => onSet('qsv', qsv)} 
-                />
-              ))}
-            </Box>
-          </Paper>
+            <Grid container spacing={2}>
+              <Grid item xs={12} md={query.qsv ? 7 : 12}>
+                <Typography variant="subtitle1" gutterBottom>QS-Verfahren</Typography>
+                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
+                  {qsvList.map(({ qsv, verfahrensnummer }) => (
+                    <Chip 
+                      key={qsv}
+                      label={`${qsv} (${verfahrensnummer ?? '-'})`}
+                      color={query.qsv === qsv ? 'primary' : 'default'}
+                      onClick={() => onSet('qsv', qsv)} 
+                      size="small"
+                    />
+                  ))}
+                </Box>
 
-          <Paper sx={{ p: 2 }}>
-            <Typography variant="subtitle1" gutterBottom>Jahr</Typography>
-            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-              {years.map((y) => (
-                <Chip 
-                  key={y}
-                  label={y}
-                  color={query.year === y ? 'primary' : 'default'}
-                  onClick={() => onSet('year', y)} 
-                />
-              ))}
-            </Box>
+                <Typography variant="subtitle1" gutterBottom>Jahr</Typography>
+                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                  {years.map((y) => (
+                    <Chip 
+                      key={y}
+                      label={y}
+                      color={query.year === y ? 'primary' : 'default'}
+                      onClick={() => onSet('year', y)} 
+                      size="small"
+                    />
+                  ))}
+                </Box>
+              </Grid>
+
+              {query.qsv && (
+                <Grid item xs={12} md={5}>
+                  <YearChart 
+                    qsv={query.qsv} 
+                    onYearClick={(year) => onSet('year', year)}
+                  />
+                </Grid>
+              )}
+            </Grid>
           </Paper>
         </>
       )}
@@ -195,31 +299,44 @@ export default function AlternativeFiltersPanel({
       {query.modul && (
         <>
           <Paper sx={{ p: 2 }}>
-            <Typography variant="subtitle1" gutterBottom>QS-Verfahren</Typography>
-            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-              {qsvList.map(({ qsv, verfahrensnummer }) => (
-                <Chip 
-                  key={qsv}
-                  label={`${qsv} (${verfahrensnummer ?? '-'})`}
-                  color={query.qsv === qsv ? 'primary' : 'default'}
-                  onClick={() => onSet('qsv', qsv)} 
-                />
-              ))}
-            </Box>
-          </Paper>
+            <Grid container spacing={2}>
+              <Grid item xs={12} md={query.qsv ? 7 : 12}>
+                <Typography variant="subtitle1" gutterBottom>QS-Verfahren</Typography>
+                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
+                  {qsvList.map(({ qsv, verfahrensnummer }) => (
+                    <Chip 
+                      key={qsv}
+                      label={`${qsv} (${verfahrensnummer ?? '-'})`}
+                      color={query.qsv === qsv ? 'primary' : 'default'}
+                      onClick={() => onSet('qsv', qsv)} 
+                      size="small"
+                    />
+                  ))}
+                </Box>
 
-          <Paper sx={{ p: 2 }}>
-            <Typography variant="subtitle1" gutterBottom>Jahr</Typography>
-            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-              {years.map((y) => (
-                <Chip 
-                  key={y}
-                  label={y}
-                  color={query.year === y ? 'primary' : 'default'}
-                  onClick={() => onSet('year', y)} 
-                />
-              ))}
-            </Box>
+                <Typography variant="subtitle1" gutterBottom>Jahr</Typography>
+                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                  {years.map((y) => (
+                    <Chip 
+                      key={y}
+                      label={y}
+                      color={query.year === y ? 'primary' : 'default'}
+                      onClick={() => onSet('year', y)} 
+                      size="small"
+                    />
+                  ))}
+                </Box>
+              </Grid>
+
+              {query.qsv && (
+                <Grid item xs={12} md={5}>
+                  <YearChart 
+                    qsv={query.qsv} 
+                    onYearClick={(year) => onSet('year', year)}
+                  />
+                </Grid>
+              )}
+            </Grid>
           </Paper>
         </>
       )}
