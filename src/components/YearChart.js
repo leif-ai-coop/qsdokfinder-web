@@ -18,11 +18,16 @@ import {
 } from 'recharts';
 import { getDocuments } from '../api';
 
-const YearChart = ({ qsv, onYearClick }) => {
+const YearChart = ({ qsv, onYearClick, jahrTyp, onJahrTypChange }) => {
   const [yearData, setYearData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [jahrTypFilter, setJahrTypFilter] = useState(null); // null = all, 'AJ', 'EJ', 'SJ'
+  const [jahrTypFilter, setJahrTypFilter] = useState(jahrTyp ?? null); // null = all, 'AJ', 'EJ', 'SJ'
   const [error, setError] = useState(null);
+  
+  // Keep local filter in sync with external query state
+  useEffect(() => {
+    setJahrTypFilter(jahrTyp ?? null);
+  }, [jahrTyp]);
 
   useEffect(() => {
     if (!qsv) {
@@ -93,6 +98,7 @@ const YearChart = ({ qsv, onYearClick }) => {
 
   const handleJahrTypChange = (event, newJahrTyp) => {
     setJahrTypFilter(newJahrTyp);
+    if (onJahrTypChange) onJahrTypChange(newJahrTyp);
   };
 
   const handleBarClick = (data) => {
@@ -114,9 +120,9 @@ const YearChart = ({ qsv, onYearClick }) => {
   }
 
   return (
-    <Paper sx={{ p: 2, width: '100%', minHeight: 300 }}>
+    <Paper sx={{ p: 1.5, width: '100%', minHeight: 220 }}>
       <Box sx={{ mb: 2 }}>
-        <Typography variant="h6" gutterBottom>
+        <Typography variant="subtitle1" gutterBottom>
           Jahr-Übersicht für {qsv}
         </Typography>
         
@@ -125,7 +131,7 @@ const YearChart = ({ qsv, onYearClick }) => {
           exclusive
           onChange={handleJahrTypChange}
           size="small"
-          sx={{ mb: 2 }}
+          sx={{ mb: 1 }}
         >
           <ToggleButton value={null}>Alle</ToggleButton>
           <ToggleButton value="AJ">AJ</ToggleButton>
@@ -135,23 +141,23 @@ const YearChart = ({ qsv, onYearClick }) => {
       </Box>
 
       {loading ? (
-        <Box sx={{ height: 200 }}>
+        <Box sx={{ height: 160 }}>
           <Skeleton variant="rectangular" height="100%" />
         </Box>
       ) : (
-        <Box sx={{ height: 200 }}>
+        <Box sx={{ height: 160 }}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={yearData}
-              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+              margin={{ top: 2, right: 10, left: 0, bottom: 2 }}
             >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
                 dataKey="Jahr" 
-                tick={{ fontSize: 12 }}
+                tick={{ fontSize: 11 }}
               />
               <YAxis 
-                tick={{ fontSize: 12 }}
+                tick={{ fontSize: 11 }}
               />
               <Tooltip 
                 formatter={(value, name) => [
@@ -168,6 +174,7 @@ const YearChart = ({ qsv, onYearClick }) => {
               <Bar 
                 dataKey="count" 
                 fill="#6B9FA1"
+                barSize={14}
                 cursor="pointer"
                 onClick={handleBarClick}
               />

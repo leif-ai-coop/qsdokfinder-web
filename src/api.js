@@ -34,6 +34,7 @@ export async function getDocuments(params) {
   if (params.inhaltstyp) usp.set("inhaltstyp", params.inhaltstyp);
   if (params.modul) usp.set("modul", params.modul);
   if (params.recent) usp.set("recent", params.recent);
+  if (params.jahr_typ) usp.set("jahr_typ", params.jahr_typ);
   const qs = usp.toString();
   const query = qs ? `?${qs}` : "";
   return fetchJson(`/documents${query}`);

@@ -54,7 +54,7 @@ export default function AlternativeFiltersPanel({
     if (query.qsv) {
       return (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <Paper sx={{ p: 2 }}>
+          <Paper sx={{ p: 1.5 }}>
             <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
               <Typography variant="h6">
                 Ausgewähltes Verfahren: {query.qsv}
@@ -68,7 +68,7 @@ export default function AlternativeFiltersPanel({
               </Button>
             </Stack>
 
-            <Grid container spacing={2}>
+            <Grid container spacing={1.5}>
               <Grid item xs={12} md={7}>
                 <Typography variant="subtitle1" gutterBottom>
                   Verfügbare Module auf einen Blick:
@@ -96,7 +96,7 @@ export default function AlternativeFiltersPanel({
                   </Box>
                 </Box>
 
-                <Box>
+                <Box sx={{ mt: 1 }}>
                   <Typography variant="subtitle2" color="secondary" sx={{ mb: 1 }}>
                     Auswertungsmodule:
                   </Typography>
@@ -121,7 +121,9 @@ export default function AlternativeFiltersPanel({
 
               <Grid item xs={12} md={5}>
                 <YearChart 
-                  qsv={query.qsv} 
+                  qsv={query.qsv}
+                  jahrTyp={query.jahr_typ ?? null}
+                  onJahrTypChange={(jt) => onSet('jahr_typ', jt)}
                   onYearClick={(year) => onSet('year', year)}
                 />
               </Grid>
@@ -129,7 +131,7 @@ export default function AlternativeFiltersPanel({
           </Paper>
 
           {/* Additional filters when QS-Verfahren is selected */}
-          <Paper sx={{ p: 2 }}>
+          <Paper sx={{ p: 1.5 }}>
             <Typography variant="subtitle1" gutterBottom>Weitere Filter:</Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               <Box>
@@ -211,7 +213,7 @@ export default function AlternativeFiltersPanel({
 
   const renderErfassungsmoduleView = () => (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <Paper sx={{ p: 2 }}>
+      <Paper sx={{ p: 1.5 }}>
         <Typography variant="h6" gutterBottom>Spezifikationsmodule (Erfassungsmodule)</Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
           Wählen Sie ein Erfassungsmodul, um spezifische Dokumentation zu finden:
@@ -231,7 +233,7 @@ export default function AlternativeFiltersPanel({
 
       {query.modul && (
         <>
-          <Paper sx={{ p: 2 }}>
+          <Paper sx={{ p: 1.5 }}>
             <Grid container spacing={2}>
               <Grid item xs={12} md={query.qsv ? 7 : 12}>
                 <Typography variant="subtitle1" gutterBottom>QS-Verfahren</Typography>
@@ -264,7 +266,9 @@ export default function AlternativeFiltersPanel({
               {query.qsv && (
                 <Grid item xs={12} md={5}>
                   <YearChart 
-                    qsv={query.qsv} 
+                    qsv={query.qsv}
+                    jahrTyp={query.jahr_typ ?? null}
+                    onJahrTypChange={(jt) => onSet('jahr_typ', jt)}
                     onYearClick={(year) => onSet('year', year)}
                   />
                 </Grid>
@@ -278,7 +282,7 @@ export default function AlternativeFiltersPanel({
 
   const renderAuswertungsmoduleView = () => (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <Paper sx={{ p: 2 }}>
+      <Paper sx={{ p: 1.5 }}>
         <Typography variant="h6" gutterBottom>Auswertungsmodule</Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
           Wählen Sie ein Auswertungsmodul, um Auswertungen und Berichte zu finden:
@@ -298,7 +302,7 @@ export default function AlternativeFiltersPanel({
 
       {query.modul && (
         <>
-          <Paper sx={{ p: 2 }}>
+          <Paper sx={{ p: 1.5 }}>
             <Grid container spacing={2}>
               <Grid item xs={12} md={query.qsv ? 7 : 12}>
                 <Typography variant="subtitle1" gutterBottom>QS-Verfahren</Typography>
@@ -331,7 +335,9 @@ export default function AlternativeFiltersPanel({
               {query.qsv && (
                 <Grid item xs={12} md={5}>
                   <YearChart 
-                    qsv={query.qsv} 
+                    qsv={query.qsv}
+                    jahrTyp={query.jahr_typ ?? null}
+                    onJahrTypChange={(jt) => onSet('jahr_typ', jt)}
                     onYearClick={(year) => onSet('year', year)}
                   />
                 </Grid>

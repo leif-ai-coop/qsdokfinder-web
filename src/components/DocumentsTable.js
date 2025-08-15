@@ -28,7 +28,7 @@ export default function DocumentsTable({ documents }) {
 				<TableHead>
 					<TableRow>
 						{headerCells.map((h) => (
-							<TableCell key={h} sx={{ fontWeight: 600 }}>{h}</TableCell>
+							<TableCell key={h} sx={{ fontWeight: 600, whiteSpace: 'nowrap', p: 1 }}>{h}</TableCell>
 						))}
 					</TableRow>
 				</TableHead>
@@ -39,20 +39,20 @@ export default function DocumentsTable({ documents }) {
 							<TableRow key={idx} hover sx={{ '&:nth-of-type(odd)': { backgroundColor: 'action.hover' } }}>
 								{isOther ? (
 									<>
-										<TableCell colSpan={7}>Sonstige Einträge...</TableCell>
+										<TableCell colSpan={7} sx={{ whiteSpace: 'nowrap', p: 1 }}>Sonstige Einträge...</TableCell>
 										<TableCell>
 											<MuiLink href={row.url} target="_blank" rel="noreferrer">Link</MuiLink>
 										</TableCell>
 									</>
 								) : (
 									<>
-										<TableCell>{`${row.QSV || ''} (${row.Verfahrensnummer || ''})`}</TableCell>
-										<TableCell>{row.Inhaltstyp || ''}</TableCell>
-										<TableCell>{row.Modul_EM_AM || ''}</TableCell>
-										<TableCell>{row.Jahr || ''}</TableCell>
-										<TableCell>{row.Jahr_typ || ''}</TableCell>
-										<TableCell>{row.Version || ''}</TableCell>
-										<TableCell>{row.Zusatzinfo || ''}</TableCell>
+										<TableCell sx={{ whiteSpace: 'nowrap', p: 1 }}>{`${row.QSV || ''} (${row.Verfahrensnummer || ''})`}</TableCell>
+										<TableCell sx={{ whiteSpace: 'nowrap', p: 1 }}>{row.Inhaltstyp || ''}</TableCell>
+										<TableCell sx={{ whiteSpace: 'nowrap', p: 1 }}>{row.Modul_EM_AM || ''}</TableCell>
+										<TableCell sx={{ whiteSpace: 'nowrap', p: 1 }}>{row.Jahr || ''}</TableCell>
+										<TableCell sx={{ whiteSpace: 'nowrap', p: 1 }}>{row.Jahr_typ || ''}</TableCell>
+										<TableCell sx={{ whiteSpace: 'nowrap', p: 1 }}>{row.Version || ''}</TableCell>
+										<TableCell sx={{ maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', p: 1 }}>{row.Zusatzinfo || ''}</TableCell>
 										<TableCell>
 											<MuiLink href={row.url} target="_blank" rel="noreferrer">Link</MuiLink>
 										</TableCell>

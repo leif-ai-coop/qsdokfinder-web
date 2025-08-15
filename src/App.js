@@ -126,7 +126,7 @@ export default function App() {
 
   useEffect(() => {
     getDocuments(query).then(setDocs);
-  }, [query.year, query.qsv, query.inhaltstyp, query.modul, query.recent]);
+  }, [query.year, query.qsv, query.inhaltstyp, query.modul, query.recent, query.jahr_typ]);
 
   const activeChips = [];
   if (query.year) activeChips.push(['year', `Jahr: ${query.year}`]);
@@ -136,6 +136,7 @@ export default function App() {
     activeChips.push(['inhaltstyp', label]);
   }
   if (query.modul) activeChips.push(['modul', `Modul: ${query.modul}`]);
+  if (query.jahr_typ) activeChips.push(['jahr_typ', `AJ/EJ/SJ: ${query.jahr_typ}`]);
   if (query.recent) {
     const map = { '1': 'Letzte 7 Tage', '2': '7-14 Tage', '3': '14-30 Tage', '4': 'Letzter Monat' };
     activeChips.push(['recent', `Neueste Aktualisierungen: ${map[query.recent]}`]);
@@ -161,7 +162,9 @@ export default function App() {
     return Number.isFinite(v) ? String(v) : '30';
   })();
   const numericLimit = limitFromQuery === 'all' ? Infinity : parseInt(limitFromQuery, 10);
-  const displayedDocuments = Number.isFinite(numericLimit) ? docs.documents.slice(0, numericLimit) : docs.documents;
+  const filteredDocsByJahrTyp = query.jahr_typ ? (docs.documents || []).filter((d) => d.Jahr_typ === query.jahr_typ) : (docs.documents || []);
+  const totalToShow = filteredDocsByJahrTyp.length;
+  const displayedDocuments = Number.isFinite(numericLimit) ? filteredDocsByJahrTyp.slice(0, numericLimit) : filteredDocsByJahrTyp;
 
   return (
     <ThemeProvider theme={theme}>
@@ -176,7 +179,7 @@ export default function App() {
           <Paper sx={{ p: 2, borderRadius: 3, boxShadow: 2, background: theme.palette.background.paper }}>
             <Typography variant="h4" align="center" gutterBottom>QS-Dokumente</Typography>
             <Stack direction="row" spacing={2} alignItems="center" justifyContent="center" sx={{ mb: 1 }}>
-              <Typography variant="body2">Anzahl Treffer: {docs.total}</Typography>
+              <Typography variant="body2">Anzahl Treffer: {totalToShow}</Typography>
               <Typography variant="body2">|</Typography>
               <Typography variant="body2">Angezeigte Treffer (max.):</Typography>
               <TextField
