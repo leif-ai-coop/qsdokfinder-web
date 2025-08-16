@@ -6,8 +6,6 @@ import {
   Paper, 
   Tooltip, 
   Typography, 
-  Tabs, 
-  Tab,
   Divider,
   Stack,
   Grid,
@@ -15,7 +13,6 @@ import {
 } from '@mui/material';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import EditIcon from '@mui/icons-material/Edit';
-import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import { formatVerfahren } from '../utils';
 import YearChart from './YearChart';
 

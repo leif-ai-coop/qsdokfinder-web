@@ -9,7 +9,6 @@ import {
 	Link as MuiLink,
 	Paper,
 	TextField,
-	Box,
 } from '@mui/material';
 import { formatVerfahren } from '../utils';
 
