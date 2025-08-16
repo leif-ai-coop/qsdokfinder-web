@@ -71,22 +71,6 @@ export default function FiltersPanel({ qsvList, inhaltstypen, years, modules, qu
 					))}
 				</Box>
 			</Paper>
-
-			<Paper sx={{ p: 1 }}>
-				<Typography variant="subtitle2">Neueste Aktualisierungen</Typography>
-				<Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-					{[
-						{ v: '1', l: 'Letzte 7 Tage' },
-						{ v: '2', l: '7-14 Tage' },
-						{ v: '3', l: '14-30 Tage' },
-						{ v: '4', l: 'Letzter Monat' },
-					].map(({ v, l }) => (
-						<Chip key={v} label={l}
-							color={query.recent === v ? 'primary' : 'default'}
-							onClick={() => onSet('recent', v)} />
-					))}
-				</Box>
-			</Paper>
 		</Box>
 	);
 }

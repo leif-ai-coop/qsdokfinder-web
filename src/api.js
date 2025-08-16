@@ -33,8 +33,8 @@ export async function getDocuments(params) {
   if (params.qsv) usp.set("qsv", params.qsv);
   if (params.inhaltstyp) usp.set("inhaltstyp", params.inhaltstyp);
   if (params.modul) usp.set("modul", params.modul);
-  if (params.recent) usp.set("recent", params.recent);
   if (params.jahr_typ) usp.set("jahr_typ", params.jahr_typ);
+  if (params.limit) usp.set("limit", params.limit);
   const qs = usp.toString();
   const query = qs ? `?${qs}` : "";
   return fetchJson(`/documents${query}`);

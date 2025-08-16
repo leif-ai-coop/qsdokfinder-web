@@ -8,7 +8,10 @@ import {
 	TableRow,
 	Link as MuiLink,
 	Paper,
+	TextField,
+	Box,
 } from '@mui/material';
+import { formatVerfahren } from '../utils';
 
 const headerCells = [
 	'QS-Verfahren',
@@ -21,7 +24,7 @@ const headerCells = [
 	'Download',
 ];
 
-export default function DocumentsTable({ documents }) {
+export default function DocumentsTable({ documents, columnFilters, onColumnFilterChange, showColumnFilters }) {
 	return (
 		<TableContainer component={Paper} sx={{ boxShadow: 0 }}>
 			<Table size="small" stickyHeader>
@@ -31,6 +34,30 @@ export default function DocumentsTable({ documents }) {
 							<TableCell key={h} sx={{ fontWeight: 600, whiteSpace: 'nowrap', p: 1 }}>{h}</TableCell>
 						))}
 					</TableRow>
+					{showColumnFilters && (
+            <TableRow>
+              {headerCells.map((h) => (
+                <TableCell key={`${h}-filter`} sx={{ p: 0.5 }}>
+                  {h !== 'Download' ? (
+                    <TextField
+                      variant="outlined"
+                      size="small"
+                      fullWidth
+                      placeholder={`Filter...`}
+                      value={columnFilters[h] || ''}
+                      onChange={(e) => onColumnFilterChange(h, e.target.value)}
+                      sx={{
+                        '& .MuiInputBase-root': {
+                          fontSize: '0.75rem',
+                          padding: '2px 8px',
+                        },
+                      }}
+                    />
+                  ) : null}
+                </TableCell>
+              ))}
+            </TableRow>
+          )}
 				</TableHead>
 				<TableBody>
 					{documents.map((row, idx) => {
@@ -46,9 +73,9 @@ export default function DocumentsTable({ documents }) {
 									</>
 								) : (
 									<>
-										<TableCell sx={{ whiteSpace: 'nowrap', p: 1 }}>{`${row.QSV || ''} (${row.Verfahrensnummer || ''})`}</TableCell>
+										<TableCell sx={{ whiteSpace: 'nowrap', p: 1 }}>{formatVerfahren(row.QSV, row.Verfahrensnummer)}</TableCell>
 										<TableCell sx={{ whiteSpace: 'nowrap', p: 1 }}>{row.Inhaltstyp || ''}</TableCell>
-										<TableCell sx={{ whiteSpace: 'nowrap', p: 1 }}>{row.Modul_EM_AM || ''}</TableCell>
+										<TableCell sx={{ whiteSpace: 'nowrap', p: 1 }}>{(row.Modul_EM_AM || '').replace('()', '-').trim()}</TableCell>
 										<TableCell sx={{ whiteSpace: 'nowrap', p: 1 }}>{row.Jahr || ''}</TableCell>
 										<TableCell sx={{ whiteSpace: 'nowrap', p: 1 }}>{row.Jahr_typ || ''}</TableCell>
 										<TableCell sx={{ whiteSpace: 'nowrap', p: 1 }}>{row.Version || ''}</TableCell>

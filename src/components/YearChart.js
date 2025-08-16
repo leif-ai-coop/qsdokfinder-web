@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Box, 
-  Paper, 
   Typography, 
   ToggleButtonGroup,
   ToggleButton,
@@ -16,85 +15,52 @@ import {
   Tooltip, 
   ResponsiveContainer 
 } from 'recharts';
-import { getDocuments } from '../api';
 
-const YearChart = ({ qsv, onYearClick, jahrTyp, onJahrTypChange }) => {
+const YearChart = ({ qsv, documents, onYearClick, jahrTyp, onJahrTypChange }) => {
   const [yearData, setYearData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [jahrTypFilter, setJahrTypFilter] = useState(jahrTyp ?? null); // null = all, 'AJ', 'EJ', 'SJ'
-  const [error, setError] = useState(null);
-  
-  // Keep local filter in sync with external query state
+  const [jahrTypFilter, setJahrTypFilter] = useState(jahrTyp ?? null);
+
   useEffect(() => {
     setJahrTypFilter(jahrTyp ?? null);
   }, [jahrTyp]);
 
   useEffect(() => {
-    if (!qsv) {
-      setYearData([]);
-      setLoading(false);
+    if (!documents) {
+      setLoading(true);
       return;
     }
+    setLoading(true);
 
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        // Fetch all documents for the selected QS-Verfahren
-        const result = await getDocuments({ qsv });
-        const documents = result.documents || [];
-        
-        // Group documents by year and year type
-        const yearGroups = {};
-        
-        documents.forEach(doc => {
-          const jahr = doc.Jahr;
-          const jahrTyp = doc.Jahr_typ;
-          
-          if (!jahr) return; // Skip documents without year
-          
-          if (!yearGroups[jahr]) {
-            yearGroups[jahr] = { AJ: 0, EJ: 0, SJ: 0, total: 0 };
-          }
-          
-          yearGroups[jahr].total++;
-          if (jahrTyp && ['AJ', 'EJ', 'SJ'].includes(jahrTyp)) {
-            yearGroups[jahr][jahrTyp]++;
-          }
-        });
-        
-        // Convert to chart data format
-        const chartData = Object.entries(yearGroups)
-          .map(([jahr, counts]) => {
-            if (jahrTypFilter && jahrTypFilter !== null) {
-              return {
-                Jahr: parseInt(jahr),
-                count: counts[jahrTypFilter] || 0,
-                jahrTyp: jahrTypFilter
-              };
-            } else {
-              return {
-                Jahr: parseInt(jahr),
-                count: counts.total,
-                jahrTyp: 'Alle'
-              };
-            }
-          })
-          .filter(item => item.count > 0) // Only show years with data
-          .sort((a, b) => a.Jahr - b.Jahr); // Sort by year
-        
-        setYearData(chartData);
-      } catch (err) {
-        console.error('Error fetching year statistics:', err);
-        setError('Fehler beim Laden der Jahr-Statistiken');
-      } finally {
-        setLoading(false);
+    const yearGroups = {};
+    documents.forEach(doc => {
+      const jahr = doc.Jahr;
+      const jahrTypVal = doc.Jahr_typ;
+      if (!jahr) return;
+      if (!yearGroups[jahr]) {
+        yearGroups[jahr] = { AJ: 0, EJ: 0, SJ: 0, total: 0 };
       }
-    };
+      yearGroups[jahr].total++;
+      if (jahrTypVal && ['AJ', 'EJ', 'SJ'].includes(jahrTypVal)) {
+        yearGroups[jahr][jahrTypVal]++;
+      }
+    });
 
-    fetchData();
-  }, [qsv, jahrTypFilter]);
+    const chartData = Object.entries(yearGroups)
+      .map(([jahr, counts]) => {
+        const count = jahrTypFilter ? counts[jahrTypFilter] || 0 : counts.total;
+        return {
+          Jahr: parseInt(jahr),
+          count: count,
+          jahrTyp: jahrTypFilter || 'Alle'
+        };
+      })
+      .filter(item => item.count > 0)
+      .sort((a, b) => a.Jahr - b.Jahr);
+    
+    setYearData(chartData);
+    setLoading(false);
+  }, [documents, jahrTypFilter]);
 
   const handleJahrTypChange = (event, newJahrTyp) => {
     setJahrTypFilter(newJahrTyp);
@@ -107,23 +73,11 @@ const YearChart = ({ qsv, onYearClick, jahrTyp, onJahrTypChange }) => {
     }
   };
 
-  if (!qsv) {
-    return null;
-  }
-
-  if (error) {
-    return (
-      <Paper sx={{ p: 2, width: '100%' }}>
-        <Typography variant="body2" color="error">{error}</Typography>
-      </Paper>
-    );
-  }
-
   return (
-    <Paper sx={{ p: 1.5, width: '100%', minHeight: 220 }}>
+    <Box sx={{ width: '100%', minHeight: 220 }}>
       <Box sx={{ mb: 2 }}>
         <Typography variant="subtitle1" gutterBottom>
-          Jahr-Übersicht für {qsv}
+          Jahr-Übersicht {qsv ? `für ${qsv}` : '(alle Verfahren)'}
         </Typography>
         
         <ToggleButtonGroup
@@ -131,7 +85,6 @@ const YearChart = ({ qsv, onYearClick, jahrTyp, onJahrTypChange }) => {
           exclusive
           onChange={handleJahrTypChange}
           size="small"
-          sx={{ mb: 1 }}
         >
           <ToggleButton value={null}>Alle</ToggleButton>
           <ToggleButton value="AJ">AJ</ToggleButton>
@@ -149,7 +102,7 @@ const YearChart = ({ qsv, onYearClick, jahrTyp, onJahrTypChange }) => {
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={yearData}
-              margin={{ top: 2, right: 10, left: 0, bottom: 2 }}
+              margin={{ top: 2, right: 10, left: -30, bottom: 2 }}
             >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
@@ -174,7 +127,7 @@ const YearChart = ({ qsv, onYearClick, jahrTyp, onJahrTypChange }) => {
               <Bar 
                 dataKey="count" 
                 fill="#6B9FA1"
-                barSize={14}
+                barSize={20}
                 cursor="pointer"
                 onClick={handleBarClick}
               />
@@ -184,10 +137,9 @@ const YearChart = ({ qsv, onYearClick, jahrTyp, onJahrTypChange }) => {
       )}
 
       <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-        Klicken Sie auf einen Balken, um das Jahr zu filtern • 
-        Zeigt echte Dokumentzahlen für {qsv}
+        Klicken Sie auf einen Balken, um das Jahr zu filtern.
       </Typography>
-    </Paper>
+    </Box>
   );
 };
 

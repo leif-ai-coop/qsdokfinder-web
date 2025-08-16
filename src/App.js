@@ -16,8 +16,11 @@ import {
   Stack,
   IconButton,
 } from '@mui/material';
+import FilterListIcon from '@mui/icons-material/FilterList';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import { grey } from '@mui/material/colors';
 import { getStand, getYears, getQsv, getInhaltstypen, getModules, getDocuments } from './api';
+import { formatVerfahren } from './utils';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import DocumentsTable from './components/DocumentsTable';
@@ -84,6 +87,8 @@ export default function App() {
     const saved = localStorage.getItem('useAlternativeFilters');
     return saved !== null ? saved === 'true' : true; // Default to true (alternative GUI)
   });
+  const [columnFilters, setColumnFilters] = useState({});
+  const [showColumnFilters, setShowColumnFilters] = useState(false);
 
   const [stand, setStand] = useState(null);
   const [years, setYears] = useState([]);
@@ -125,8 +130,26 @@ export default function App() {
   }, [query.qsv]);
 
   useEffect(() => {
-    getDocuments(query).then(setDocs);
-  }, [query.year, query.qsv, query.inhaltstyp, query.modul, query.recent, query.jahr_typ]);
+    // If a module is selected without a qsv, find the qsv and set it
+    if (query.modul && !query.qsv) {
+      getDocuments({ modul: query.modul, limit: 1 }).then(result => {
+        if (result.documents && result.documents.length > 0) {
+          const doc = result.documents[0];
+          if (doc.QSV) {
+            setQuery(s => ({ ...s, qsv: doc.QSV }));
+          }
+        }
+      });
+    } else {
+      getDocuments(query).then(setDocs);
+    }
+  }, [query, setQuery]);
+  
+  useEffect(() => {
+    if (query.qsv) {
+      getDocuments(query).then(setDocs);
+    }
+  }, [query]);
 
   const activeChips = [];
   if (query.year) activeChips.push(['year', `Jahr: ${query.year}`]);
@@ -137,10 +160,6 @@ export default function App() {
   }
   if (query.modul) activeChips.push(['modul', `Modul: ${query.modul}`]);
   if (query.jahr_typ) activeChips.push(['jahr_typ', `AJ/EJ/SJ: ${query.jahr_typ}`]);
-  if (query.recent) {
-    const map = { '1': 'Letzte 7 Tage', '2': '7-14 Tage', '3': '14-30 Tage', '4': 'Letzter Monat' };
-    activeChips.push(['recent', `Neueste Aktualisierungen: ${map[query.recent]}`]);
-  }
 
   const setOrToggle = (key, value) => {
     setQuery((s) => {
@@ -152,7 +171,14 @@ export default function App() {
   };
 
   const clearFilter = (key) => setQuery((s) => { const n = { ...s }; delete n[key]; return n; });
-  const resetAll = () => setQuery({});
+  const resetAll = () => {
+    setQuery({});
+    setColumnFilters({});
+  };
+  
+  const handleColumnFilterChange = (column, value) => {
+    setColumnFilters(prev => ({ ...prev, [column]: value }));
+  };
 
   // Limit handling (results per page)
   const limitFromQuery = (() => {
@@ -163,8 +189,66 @@ export default function App() {
   })();
   const numericLimit = limitFromQuery === 'all' ? Infinity : parseInt(limitFromQuery, 10);
   const filteredDocsByJahrTyp = query.jahr_typ ? (docs.documents || []).filter((d) => d.Jahr_typ === query.jahr_typ) : (docs.documents || []);
-  const totalToShow = filteredDocsByJahrTyp.length;
-  const displayedDocuments = Number.isFinite(numericLimit) ? filteredDocsByJahrTyp.slice(0, numericLimit) : filteredDocsByJahrTyp;
+  
+  const columnToPropertyMap = {
+    'QS-Verfahren': ['QSV', 'Verfahrensnummer'],
+    'Inhaltstyp': ['Inhaltstyp'],
+    'Modul (EM/AM)': ['Modul_EM_AM'],
+    'Jahr': ['Jahr'],
+    'AJ/EJ/SJ': ['Jahr_typ'],
+    'Version': ['Version'],
+    'Zusatzinfo': ['Zusatzinfo'],
+  };
+
+  const documentsAfterColumnFilters = filteredDocsByJahrTyp.filter(doc => {
+    return Object.entries(columnFilters).every(([column, filterValue]) => {
+      const properties = columnToPropertyMap[column];
+      if (!properties || !filterValue) return true;
+      
+      const lowerCaseFilterValue = filterValue.toLowerCase();
+
+      // Special handling for the formatted 'QS-Verfahren' column
+      if (column === 'QS-Verfahren') {
+        const formatted = formatVerfahren(doc.QSV, doc.Verfahrensnummer).toLowerCase();
+        return formatted.includes(lowerCaseFilterValue);
+      }
+
+      // Check if any of the associated properties match the filter
+      return properties.some(prop => {
+        const docValue = doc[prop];
+        if (docValue === null || docValue === undefined) return false;
+        return String(docValue).toLowerCase().includes(lowerCaseFilterValue);
+      });
+    });
+  });
+
+  // Sort the documents
+  documentsAfterColumnFilters.sort((a, b) => {
+    const aHasVerfahren = a.QSV || a.Verfahrensnummer;
+    const bHasVerfahren = b.QSV || b.Verfahrensnummer;
+
+    // Push rows with no Verfahren to the bottom
+    if (aHasVerfahren && !bHasVerfahren) return -1;
+    if (!aHasVerfahren && bHasVerfahren) return 1;
+
+    // 1. Sort by Jahr (descending)
+    if (a.Jahr !== b.Jahr) {
+      return (b.Jahr || 0) - (a.Jahr || 0);
+    }
+    // 2. Sort by Verfahrensnummer (ascending)
+    if (a.Verfahrensnummer !== b.Verfahrensnummer) {
+      const numA = parseInt(a.Verfahrensnummer, 10) || 0;
+      const numB = parseInt(b.Verfahrensnummer, 10) || 0;
+      return numA - numB;
+    }
+    // 3. Sort by Version (descending, handling 'v' prefix)
+    const versionA = parseInt((a.Version || '').replace('v', ''), 10) || 0;
+    const versionB = parseInt((b.Version || '').replace('v', ''), 10) || 0;
+    return versionB - versionA;
+  });
+
+  const totalToShow = documentsAfterColumnFilters.length;
+  const displayedDocuments = Number.isFinite(numericLimit) ? documentsAfterColumnFilters.slice(0, numericLimit) : documentsAfterColumnFilters;
 
   return (
     <ThemeProvider theme={theme}>
@@ -180,6 +264,11 @@ export default function App() {
             <Typography variant="h4" align="center" gutterBottom>QS-Dokumente</Typography>
             <Stack direction="row" spacing={2} alignItems="center" justifyContent="center" sx={{ mb: 1 }}>
               <Typography variant="body2">Anzahl Treffer: {totalToShow}</Typography>
+              <Tooltip title="Spaltenfilter ein-/ausblenden">
+                <IconButton size="small" onClick={() => setShowColumnFilters(!showColumnFilters)} color={showColumnFilters ? 'primary' : 'default'}>
+                  <FilterListIcon />
+                </IconButton>
+              </Tooltip>
               <Typography variant="body2">|</Typography>
               <Typography variant="body2">Angezeigte Treffer (max.):</Typography>
               <TextField
@@ -200,21 +289,41 @@ export default function App() {
             </Stack>
 
             {activeChips.length > 0 && (
-              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: 'center', mb: 2 }}>
+              <Stack direction="row" spacing={1} alignItems="center" justifyContent="center" sx={{ mb: 2, flexWrap: 'wrap', gap: 1 }}>
                 {activeChips.map(([k, label]) => (
                   <Chip key={k} label={label} color="primary" onClick={() => clearFilter(k)} />
                 ))}
-              </Box>
+                <Button
+                  variant="text"
+                  size="small"
+                  onClick={resetAll}
+                  startIcon={<RestartAltIcon />}
+                  sx={{ ml: 1, color: 'text.secondary' }}
+                >
+                  Alle zurücksetzen
+                </Button>
+              </Stack>
             )}
 
           <Grid container spacing={2}>
-            <Grid item xs={12} md={3}>
+            <Grid
+              item
+              xs={12}
+              md={3}
+              lg={3}
+              sx={{
+                position: { md: 'sticky' },
+                top: '88px',
+                alignSelf: 'flex-start',
+              }}
+            >
               {useAlternativeFilters ? (
                 <AlternativeFiltersPanel
                   qsvList={qsvList}
                   inhaltstypen={inhaltstypen}
                   years={years}
                   modules={modules}
+                  documents={docs.documents}
                   query={query}
                   onSet={setOrToggle}
                   onReset={resetAll}
@@ -231,10 +340,15 @@ export default function App() {
                 />
               )}
             </Grid>
-            <Grid item xs={12} md={9}>
+            <Grid item xs={12} md={9} lg={9}>
               <Paper sx={{ p: 1 }}>
                 <Box sx={{ overflowX: 'auto' }}>
-                  <DocumentsTable documents={displayedDocuments} />
+                  <DocumentsTable 
+                    documents={displayedDocuments} 
+                    columnFilters={columnFilters}
+                    onColumnFilterChange={handleColumnFilterChange}
+                    showColumnFilters={showColumnFilters}
+                  />
                 </Box>
               </Paper>
             </Grid>
