@@ -18,9 +18,9 @@ const Footer = () => {
 				© {year} QS‑Dokumente.
 			</Typography>
 			<Typography variant="body2" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-				<Link href="#" sx={{ mx: 2, textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>Nutzungsbedingungen</Link>
-				<Link href="#" sx={{ mx: 2, textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>Datenschutzerklärung</Link>
-				<Link href="#" sx={{ mx: 2, textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>Impressum</Link>
+				<Link href="https://qs.leif.warming.de/nutzungsbedingungen.html" sx={{ mx: 2, textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>Nutzungsbedingungen</Link>
+				<Link href="https://qs.leif.warming.de/datenschutz.html" sx={{ mx: 2, textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>Datenschutzerklärung</Link>
+				<Link href="https://qs.leif.warming.de/impressum.html" sx={{ mx: 2, textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>Impressum</Link>
 			</Typography>
 		</Box>
 	);
