@@ -15,7 +15,7 @@ const Footer = () => {
 			}}
 		>
 			<Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-				© {year} QS‑Dokumente.
+				© {year} QS‑Dokumente
 			</Typography>
 			<Typography variant="body2" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
 				<Link href="https://qs.leif.warming.de/nutzungsbedingungen.html" sx={{ mx: 2, textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>Nutzungsbedingungen</Link>
