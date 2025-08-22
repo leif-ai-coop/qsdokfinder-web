@@ -10,6 +10,10 @@ import {
   Stack,
   Grid,
   IconButton,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
 } from '@mui/material';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import EditIcon from '@mui/icons-material/Edit';
@@ -58,6 +62,42 @@ export default function AlternativeFiltersPanel({
     if (query.modul) {
       onSet('modul', null);
     }
+  };
+
+  // Helper function to render the view selector dropdown
+  const renderViewSelector = () => {
+    const getLabel = () => {
+      return 'Anzeige auswählen:';
+    };
+
+    const getValue = () => {
+      switch (activeView) {
+        case 'erfassungsmodule':
+          return 'Erfassungsmodule';
+        case 'auswertungsmodule':
+          return 'Auswertungsmodule';
+        default:
+          return 'QS-Verfahren';
+      }
+    };
+
+    return (
+      <FormControl fullWidth size="small" sx={{ mb: 2 }}>
+        <InputLabel id="view-select-label">{getLabel()}</InputLabel>
+        <Select
+          labelId="view-select-label"
+          value={activeView}
+          label={getLabel()}
+          onChange={(e) => handleViewChange(e.target.value)}
+          displayEmpty
+          renderValue={() => getValue()}
+        >
+          <MenuItem value="qsverfahren">QS-Verfahren</MenuItem>
+          <MenuItem value="erfassungsmodule">Erfassungsmodule</MenuItem>
+          <MenuItem value="auswertungsmodule">Auswertungsmodule</MenuItem>
+        </Select>
+      </FormControl>
+    );
   };
 
   const renderQSVerfahrenView = () => {
@@ -173,7 +213,7 @@ export default function AlternativeFiltersPanel({
     return (
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <Paper sx={{ p: 2 }}>
-          <Typography variant="h6" gutterBottom>QS-Verfahren auswählen:</Typography>
+          {renderViewSelector()}
           <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
             {qsvList.map(({ qsv, verfahrensnummer }) => (
               <Chip 
@@ -202,9 +242,9 @@ export default function AlternativeFiltersPanel({
   const renderErfassungsmoduleView = () => (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
       <Paper sx={{ p: 1.5 }}>
-        <Typography variant="h6" gutterBottom>{erfassungsmodule.length === 1 ? 'Erfassungsmodul' : 'Erfassungsmodule'}</Typography>
+        {renderViewSelector()}
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          Wählen Sie ein Erfassungsmodul, um spezifische Dokumentation zu finden:
+          Wählen Sie ein Erfassungsmodul, um spezifikationsbezogene Dokumente anzuzeigen:
         </Typography>
         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
           {erfassungsmodule.map(m => (
@@ -270,9 +310,9 @@ export default function AlternativeFiltersPanel({
   const renderAuswertungsmoduleView = () => (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
       <Paper sx={{ p: 1.5 }}>
-        <Typography variant="h6" gutterBottom>{auswertungsmodule.length === 1 ? 'Auswertungsmodul' : 'Auswertungsmodule'}</Typography>
+        {renderViewSelector()}
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          Wählen Sie ein Auswertungsmodul, um Rechenregeln und Berichte zu finden:
+          Wählen Sie ein Auswertungsmodul, um Rechenregeln und Berichte anzuzeigen:
         </Typography>
         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
           {auswertungsmodule.map(m => (
@@ -337,39 +377,6 @@ export default function AlternativeFiltersPanel({
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      {/* Navigation Buttons - Conditionally Rendered */}
-      {!query.qsv && !query.modul && (
-        <Paper sx={{ p: 2 }}>
-          <Stack direction="column" spacing={1.5} sx={{ mb: 2 }}>
-            <Button
-              fullWidth
-              variant={activeView === 'qsverfahren' ? 'contained' : 'outlined'}
-              onClick={() => handleViewChange('qsverfahren')}
-              size="small"
-            >
-              QS-Verfahren
-            </Button>
-            <Button
-              fullWidth
-              variant={activeView === 'erfassungsmodule' ? 'contained' : 'outlined'}
-              onClick={() => handleViewChange('erfassungsmodule')}
-              size="small"
-            >
-              Erfassungsmodule
-            </Button>
-            <Button
-              fullWidth
-              variant={activeView === 'auswertungsmodule' ? 'contained' : 'outlined'}
-              onClick={() => handleViewChange('auswertungsmodule')}
-              size="small"
-            >
-              Auswertungsmodule
-            </Button>
-          </Stack>
-          <Divider />
-        </Paper>
-      )}
-
       {/* Dynamic Content Based on Active View */}
       {activeView === 'qsverfahren' && renderQSVerfahrenView()}
       {activeView === 'erfassungsmodule' && renderErfassungsmoduleView()}
