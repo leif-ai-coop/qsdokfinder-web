@@ -222,26 +222,22 @@ export default function App() {
     });
   });
 
-  // Sort the documents
+  // Default: alphabetically by formatted QS-Verfahren; stable fallbacks
   documentsAfterColumnFilters.sort((a, b) => {
-    const aHasVerfahren = a.QSV || a.Verfahrensnummer;
-    const bHasVerfahren = b.QSV || b.Verfahrensnummer;
+    const labelA = (formatVerfahren(a.QSV, a.Verfahrensnummer) || '').trim();
+    const labelB = (formatVerfahren(b.QSV, b.Verfahrensnummer) || '').trim();
+    // Empty labels go to the end
+    const aEmpty = labelA.length === 0;
+    const bEmpty = labelB.length === 0;
+    if (aEmpty && !bEmpty) return 1;
+    if (!aEmpty && bEmpty) return -1;
 
-    // Push rows with no Verfahren to the bottom
-    if (aHasVerfahren && !bHasVerfahren) return -1;
-    if (!aHasVerfahren && bHasVerfahren) return 1;
-
-    // 1. Sort by Jahr (descending)
+    const cmp = labelA.localeCompare(labelB, 'de', { sensitivity: 'base' });
+    if (cmp !== 0) return cmp;
+    // Fallback: Jahr desc, Version desc
     if (a.Jahr !== b.Jahr) {
       return (b.Jahr || 0) - (a.Jahr || 0);
     }
-    // 2. Sort by Verfahrensnummer (ascending)
-    if (a.Verfahrensnummer !== b.Verfahrensnummer) {
-      const numA = parseInt(a.Verfahrensnummer, 10) || 0;
-      const numB = parseInt(b.Verfahrensnummer, 10) || 0;
-      return numA - numB;
-    }
-    // 3. Sort by Version (descending, handling 'v' prefix)
     const versionA = parseInt((a.Version || '').replace('v', ''), 10) || 0;
     const versionB = parseInt((b.Version || '').replace('v', ''), 10) || 0;
     return versionB - versionA;

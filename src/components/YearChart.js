@@ -4,7 +4,8 @@ import {
   Typography, 
   ToggleButtonGroup,
   ToggleButton,
-  Skeleton
+  Skeleton,
+  Button
 } from '@mui/material';
 import { 
   BarChart, 
@@ -16,7 +17,7 @@ import {
   ResponsiveContainer 
 } from 'recharts';
 
-const YearChart = ({ qsv, documents, onYearClick, jahrTyp, onJahrTypChange }) => {
+const YearChart = ({ qsv, documents, onYearClick, jahrTyp, onJahrTypChange, selectedYear }) => {
   const [yearData, setYearData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [jahrTypFilter, setJahrTypFilter] = useState(jahrTyp ?? null);
@@ -68,8 +69,12 @@ const YearChart = ({ qsv, documents, onYearClick, jahrTyp, onJahrTypChange }) =>
   };
 
   const handleBarClick = (data) => {
-    if (data && data.Jahr && onYearClick) {
-      onYearClick(String(data.Jahr));
+    if (!data || !data.Jahr || !onYearClick) return;
+    const clicked = String(data.Jahr);
+    if (selectedYear && String(selectedYear) === clicked) {
+      onYearClick(null);
+    } else {
+      onYearClick(clicked);
     }
   };
 
@@ -77,7 +82,7 @@ const YearChart = ({ qsv, documents, onYearClick, jahrTyp, onJahrTypChange }) =>
     <Box sx={{ width: '100%', minHeight: 220 }}>
       <Box sx={{ mb: 2 }}>
         <Typography variant="subtitle1" gutterBottom>
-          Jahr-Übersicht {qsv ? `für ${qsv}` : '(alle Verfahren)'}
+          Jahres-Übersicht {qsv ? `für ${qsv}` : '(alle Dokumente)'}
         </Typography>
         
         <ToggleButtonGroup
@@ -91,6 +96,11 @@ const YearChart = ({ qsv, documents, onYearClick, jahrTyp, onJahrTypChange }) =>
           <ToggleButton value="EJ">EJ</ToggleButton>
           <ToggleButton value="SJ">SJ</ToggleButton>
         </ToggleButtonGroup>
+        {selectedYear && (
+          <Button size="small" onClick={() => onYearClick && onYearClick(null)} sx={{ ml: 1 }}>
+            Jahr-Filter entfernen
+          </Button>
+        )}
       </Box>
 
       {loading ? (

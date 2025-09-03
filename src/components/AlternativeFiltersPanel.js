@@ -42,6 +42,7 @@ export default function AlternativeFiltersPanel({
 }) {
   // Navigation state: 'qsverfahren' | 'erfassungsmodule' | 'auswertungsmodule'
   const [activeView, setActiveView] = useState('qsverfahren');
+  const [showMoreQsv, setShowMoreQsv] = useState(false);
 
   // Automatically switch to the 'qsverfahren' view when a qsv is selected
   useEffect(() => {
@@ -128,6 +129,7 @@ export default function AlternativeFiltersPanel({
                 jahrTyp={query.jahr_typ ?? null}
                 onJahrTypChange={(jt) => onSet('jahr_typ', jt)}
                 onYearClick={(year) => onSet('year', year)}
+                selectedYear={query.year ?? null}
               />
             </Paper>
           </Box>
@@ -209,20 +211,58 @@ export default function AlternativeFiltersPanel({
     }
 
     // Default QS-Verfahren selection view
+    // Prepare alphabetically sorted QS-Verfahren list with labels
+    const sortedQsv = [...qsvList]
+      .map(({ qsv, verfahrensnummer }) => ({ qsv, verfahrensnummer, label: formatVerfahren(qsv, verfahrensnummer) }))
+      .sort((a, b) => a.label.localeCompare(b.label, 'de', { sensitivity: 'base' }));
+
+    const MAX_LABEL = 22;
+    const shortItems = sortedQsv.filter(i => (i.label || '').length <= MAX_LABEL);
+    const longItems = sortedQsv.filter(i => (i.label || '').length > MAX_LABEL);
+
     return (
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <Paper sx={{ p: 2 }}>
           {renderViewSelector()}
           <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-            {qsvList.map(({ qsv, verfahrensnummer }) => (
-              <Chip 
+            {shortItems.map(({ qsv, label }) => (
+              <Chip
                 key={qsv}
-                label={formatVerfahren(qsv, verfahrensnummer)}
+                label={label}
                 color={query.qsv === qsv ? 'primary' : 'default'}
                 onClick={() => onSet('qsv', qsv)}
                 sx={{ mb: 1 }}
               />
             ))}
+            {!showMoreQsv && longItems.length > 0 && (
+              <Chip
+                key="weitere"
+                label="Weitere"
+                variant="outlined"
+                color="default"
+                onClick={() => setShowMoreQsv(true)}
+                sx={{ mb: 1 }}
+              />
+            )}
+            {showMoreQsv && longItems.map(({ qsv, label }) => (
+              <Chip
+                key={qsv}
+                label={label}
+                color={query.qsv === qsv ? 'primary' : 'default'}
+                onClick={() => onSet('qsv', qsv)}
+                sx={{ mb: 1 }}
+              />
+            ))}
+            {showMoreQsv && longItems.length > 0 && (
+              <Chip
+                key="weniger"
+                label="Weniger"
+                variant="outlined"
+                color="default"
+                onClick={() => setShowMoreQsv(false)}
+                sx={{ mb: 1 }}
+              />
+            )}
           </Box>
         </Paper>
         <Paper sx={{ p: 1.5 }}>
@@ -232,6 +272,7 @@ export default function AlternativeFiltersPanel({
             jahrTyp={query.jahr_typ ?? null}
             onJahrTypChange={(jt) => onSet('jahr_typ', jt)}
             onYearClick={(year) => onSet('year', year)}
+            selectedYear={query.year ?? null}
           />
         </Paper>
       </Box>
@@ -286,6 +327,7 @@ export default function AlternativeFiltersPanel({
                     jahrTyp={query.jahr_typ ?? null}
                     onJahrTypChange={(jt) => onSet('jahr_typ', jt)}
                     onYearClick={(year) => onSet('year', year)}
+                    selectedYear={query.year ?? null}
                   />
                 </Grid>
               )}
@@ -300,6 +342,7 @@ export default function AlternativeFiltersPanel({
             jahrTyp={query.jahr_typ ?? null}
             onJahrTypChange={(jt) => onSet('jahr_typ', jt)}
             onYearClick={(year) => onSet('year', year)}
+            selectedYear={query.year ?? null}
           />
         </Paper>
       )}
@@ -354,6 +397,7 @@ export default function AlternativeFiltersPanel({
                     jahrTyp={query.jahr_typ ?? null}
                     onJahrTypChange={(jt) => onSet('jahr_typ', jt)}
                     onYearClick={(year) => onSet('year', year)}
+                    selectedYear={query.year ?? null}
                   />
                 </Grid>
               )}
@@ -368,6 +412,7 @@ export default function AlternativeFiltersPanel({
             jahrTyp={query.jahr_typ ?? null}
             onJahrTypChange={(jt) => onSet('jahr_typ', jt)}
             onYearClick={(year) => onSet('year', year)}
+            selectedYear={query.year ?? null}
           />
         </Paper>
       )}
