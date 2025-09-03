@@ -12,7 +12,7 @@ const inhaltstypDescriptions = {
 	Sonstige: 'Sonstige Dokumente',
 };
 
-export default function FiltersPanel({ qsvList, inhaltstypen, years, modules, query, onSet, onReset }) {
+export default function FiltersPanel({ qsvList, inhaltstypen, years, modules, modulesLoading, query, onSet, onReset }) {
 	return (
 		<Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
 			<Button variant="contained" onClick={onReset}>Filter zurücksetzen</Button>
@@ -56,7 +56,10 @@ export default function FiltersPanel({ qsvList, inhaltstypen, years, modules, qu
 			<Paper sx={{ p: 1 }}>
 				<Typography variant="subtitle2">Auswertungsmodule (AM)</Typography>
 				<Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-					{modules.filter(m => m.Modulart === 'AM').map(m => (
+					{modulesLoading && (
+						<Typography variant="body2" color="text.secondary">Lade Module…</Typography>
+					)}
+					{!modulesLoading && modules.filter(m => m.Modulart === 'AM').map(m => (
 						<Chip key={`AM-${m.Modul}`} label={m.Modul}
 							color={query.modul === m.Modul ? 'primary' : 'default'}
 							onClick={() => onSet('modul', m.Modul)} />
@@ -64,7 +67,10 @@ export default function FiltersPanel({ qsvList, inhaltstypen, years, modules, qu
 				</Box>
 				<Typography variant="subtitle2" sx={{ mt: 1 }}>Erfassungsmodule (EM)</Typography>
 				<Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-					{modules.filter(m => m.Modulart === 'EM').map(m => (
+					{modulesLoading && (
+						<Typography variant="body2" color="text.secondary">Lade Module…</Typography>
+					)}
+					{!modulesLoading && modules.filter(m => m.Modulart === 'EM').map(m => (
 						<Chip key={`EM-${m.Modul}`} label={m.Modul}
 							color={query.modul === m.Modul ? 'primary' : 'default'}
 							onClick={() => onSet('modul', m.Modul)} />

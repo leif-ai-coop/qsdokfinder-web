@@ -35,6 +35,7 @@ export default function AlternativeFiltersPanel({
   inhaltstypen, 
   years, 
   modules, 
+  modulesLoading,
   documents,
   query, 
   onSet, 
@@ -165,7 +166,10 @@ export default function AlternativeFiltersPanel({
                   {erfassungsmodule.length === 1 ? 'Erfassungsmodul:' : 'Erfassungsmodule:'}
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                  {erfassungsmodule.map(m => (
+                  {modulesLoading && (
+                    <Typography variant="body2" color="text.secondary">Lade Module…</Typography>
+                  )}
+                  {!modulesLoading && erfassungsmodule.map(m => (
                     <Chip 
                       key={`EM-${m.Modul}`} 
                       label={`${m.Modul} (EM)`}
@@ -175,7 +179,7 @@ export default function AlternativeFiltersPanel({
                       sx={chipSx}
                     />
                   ))}
-                  {erfassungsmodule.length === 0 && (
+                  {!modulesLoading && erfassungsmodule.length === 0 && (
                     <Typography variant="body2" color="text.secondary">
                       Keine Erfassungsmodule verfügbar
                     </Typography>
@@ -187,7 +191,10 @@ export default function AlternativeFiltersPanel({
                   {auswertungsmodule.length === 1 ? 'Auswertungsmodul:' : 'Auswertungsmodule:'}
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                  {auswertungsmodule.map(m => (
+                  {modulesLoading && (
+                    <Typography variant="body2" color="text.secondary">Lade Module…</Typography>
+                  )}
+                  {!modulesLoading && auswertungsmodule.map(m => (
                     <Chip 
                       key={`AM-${m.Modul}`} 
                       label={`${m.Modul} (AM)`}
@@ -197,7 +204,7 @@ export default function AlternativeFiltersPanel({
                       sx={chipSx}
                     />
                   ))}
-                  {auswertungsmodule.length === 0 && (
+                  {!modulesLoading && auswertungsmodule.length === 0 && (
                     <Typography variant="body2" color="text.secondary">
                       Keine Auswertungsmodule verfügbar
                     </Typography>

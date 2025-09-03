@@ -95,6 +95,7 @@ export default function App() {
   const [qsvList, setQsvList] = useState([]);
   const [inhaltstypen, setInhaltstypen] = useState([]);
   const [modules, setModules] = useState([]);
+  const [modulesLoading, setModulesLoading] = useState(false);
   const [docs, setDocs] = useState({ total: 0, documents: [] });
 
   const toggleColorMode = () => {
@@ -126,7 +127,17 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    getModules(query.qsv).then((d) => setModules(d.modules));
+    // Load modules only when a Verfahren (qsv) is selected to avoid flashing global list
+    if (query.qsv) {
+      setModulesLoading(true);
+      setModules([]); // clear to prevent flash of stale data
+      getModules(query.qsv)
+        .then((d) => setModules(d.modules))
+        .finally(() => setModulesLoading(false));
+    } else {
+      setModules([]);
+      setModulesLoading(false);
+    }
   }, [query.qsv]);
 
   useEffect(() => {
@@ -319,6 +330,7 @@ export default function App() {
                   inhaltstypen={inhaltstypen}
                   years={years}
                   modules={modules}
+                  modulesLoading={modulesLoading}
                   documents={docs.documents}
                   query={query}
                   onSet={setOrToggle}
@@ -330,6 +342,7 @@ export default function App() {
                   inhaltstypen={inhaltstypen}
                   years={years}
                   modules={modules}
+                  modulesLoading={modulesLoading}
                   query={query}
                   onSet={setOrToggle}
                   onReset={resetAll}
